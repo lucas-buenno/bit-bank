@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -13,6 +14,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NotNull
 @Data
+@Table(name = "wallet_db")
 public class Wallet {
 
     @Id
@@ -32,8 +34,9 @@ public class Wallet {
     @Column(name = "balance")
     private BigDecimal balance;
 
-    @Column(name = local)
-    private LocalDateTime walletDateCreation;
+    @Column(name = "wallet_creation_date")
+    @CreationTimestamp
+    private LocalDateTime walletCreationDate;
 
 
 }
