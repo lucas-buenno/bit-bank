@@ -4,7 +4,10 @@ import com.fbr.tech.BitBank.controllers.dto.CreateWalletDto;
 import com.fbr.tech.BitBank.controllers.dto.GetWalletsDto;
 import com.fbr.tech.BitBank.entities.Wallet;
 import com.fbr.tech.BitBank.exception.DataAlreadyExistsException;
+import com.fbr.tech.BitBank.exception.WalletBalanceException;
+import com.fbr.tech.BitBank.exception.WalletNotFoundException;
 import com.fbr.tech.BitBank.repositories.WalletRepository;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -12,6 +15,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @AllArgsConstructor
@@ -64,5 +69,20 @@ public class WalletService {
                         wallet.getBalance(),
                         wallet.getWalletCreationDate()
                 ));
+    }
+
+    @Transactional
+    public boolean deleteWalletById(UUID walletID) {
+
+        var wallet = walletRepository.findById(walletID);
+
+        if (wallet.isPresent() && wallet.get().getBalance().compareTo(BigDecimal.ZERO ) > 0) {
+            throw new WalletBalanceException("A carteira possui saldo disponível");
+        }
+
+        walletRepository.deleteById(walletID);
+
+        return wallet.isPresent();
+
     }
 }

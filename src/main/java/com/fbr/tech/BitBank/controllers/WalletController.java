@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.util.UUID;
 
 @RestController
 @RequestMapping(path = "/wallets")
@@ -31,7 +32,7 @@ public class WalletController {
 
 
     @GetMapping
-    ResponseEntity<ApiResponse<GetWalletsDto>> getWallets(
+    public ResponseEntity<ApiResponse<GetWalletsDto>> getWallets(
             @RequestParam(name = "page", defaultValue = "0") Integer page,
             @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
             @RequestParam(name = "sortBy", defaultValue = "walletCreationDate") String sortBy,
@@ -42,6 +43,22 @@ public class WalletController {
         return ResponseEntity.ok(new ApiResponse<>(response.getContent(),
                 new PaginationResponseDto(page, pageSize, response.getTotalElements(), response.getTotalPages())));
     }
+
+
+    @DeleteMapping("/{walletId}")
+    public ResponseEntity<Void> deleteWalletById(@PathVariable UUID walletId) {
+
+        var isWalletDeleted = walletService.deleteWalletById(walletId);
+
+        return isWalletDeleted ?
+                ResponseEntity.noContent().build() :
+                ResponseEntity.notFound().build();
     }
+
+
+
+    }
+
+
 
 
