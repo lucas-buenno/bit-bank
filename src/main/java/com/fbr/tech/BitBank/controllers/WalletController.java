@@ -1,10 +1,9 @@
 package com.fbr.tech.BitBank.controllers;
 
-import com.fbr.tech.BitBank.controllers.dto.ApiResponse;
-import com.fbr.tech.BitBank.controllers.dto.CreateWalletDto;
-import com.fbr.tech.BitBank.controllers.dto.GetWalletsDto;
-import com.fbr.tech.BitBank.controllers.dto.PaginationResponseDto;
+import com.fbr.tech.BitBank.controllers.dto.*;
+import com.fbr.tech.BitBank.entities.Deposit;
 import com.fbr.tech.BitBank.services.WalletService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.apache.coyote.Response;
@@ -54,6 +53,17 @@ public class WalletController {
                 ResponseEntity.noContent().build() :
                 ResponseEntity.notFound().build();
     }
+
+    @PostMapping(path = "/{walletId}/deposit")
+    public ResponseEntity<Void> depositMoney(@PathVariable UUID walletId,
+                                             @RequestBody @Valid DepositMoneyDto dto,
+                                             HttpServletRequest request) {
+
+        walletService.depositMoney(walletId, dto, request.getAttribute("x-user-ip"));
+
+        return ResponseEntity.ok().build();
+    }
+
 
 
 

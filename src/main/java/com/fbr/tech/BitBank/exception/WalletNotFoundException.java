@@ -17,7 +17,7 @@ public class WalletNotFoundException extends BitBankException {
 
         var pd = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
 
-        pd.setTitle("Não foi possível excluir a carteira");
+        pd.setTitle("Carteira não encontrada");
         pd.setDetail(detail);
 
         return pd;

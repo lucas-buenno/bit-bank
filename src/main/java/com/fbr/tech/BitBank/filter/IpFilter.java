@@ -19,7 +19,7 @@ public class IpFilter extends HttpFilter {
 
         var ipAddress = request.getRemoteAddr();
 
-        request.setAttribute("x-user-api", ipAddress);
+        request.setAttribute("x-user-ip", ipAddress);
         response.setHeader("x-user-ip", ipAddress);
 
         chain.doFilter(request, response);

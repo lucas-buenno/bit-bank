@@ -1,13 +1,17 @@
 package com.fbr.tech.BitBank.services;
 
 import com.fbr.tech.BitBank.controllers.dto.CreateWalletDto;
+import com.fbr.tech.BitBank.controllers.dto.DepositMoneyDto;
 import com.fbr.tech.BitBank.controllers.dto.GetWalletsDto;
+import com.fbr.tech.BitBank.entities.Deposit;
 import com.fbr.tech.BitBank.entities.Wallet;
 import com.fbr.tech.BitBank.exception.DataAlreadyExistsException;
 import com.fbr.tech.BitBank.exception.WalletBalanceException;
 import com.fbr.tech.BitBank.exception.WalletNotFoundException;
+import com.fbr.tech.BitBank.repositories.DepositRepository;
 import com.fbr.tech.BitBank.repositories.WalletRepository;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -15,7 +19,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -24,6 +27,8 @@ public class WalletService {
 
 
     private WalletRepository walletRepository;
+
+    private DepositRepository depositRepository;
 
 
     public Wallet createWallet(CreateWalletDto dto) {
@@ -84,5 +89,23 @@ public class WalletService {
 
         return wallet.isPresent();
 
+    }
+
+
+    @Transactional
+    public void depositMoney(UUID walletId, @Valid DepositMoneyDto dto, Object attribute) {
+
+        var wallet = walletRepository.findById(walletId)
+                .orElseThrow(() -> new WalletNotFoundException("Não existe carteira com o ID informado."));
+
+        var deposit = new Deposit();
+        deposit.setDepositValue(dto.value());
+        deposit.setWalletReceiver(wallet);
+        deposit.setIpAddress(attribute.toString());
+        depositRepository.save(deposit);
+
+
+        wallet.setBalance(wallet.getBalance().add(dto.value()));
+        walletRepository.save(wallet);
     }
 }

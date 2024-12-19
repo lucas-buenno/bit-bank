@@ -37,7 +37,7 @@ public class AuditInterceptors implements HandlerInterceptor {
                 request.getMethod(),
                 request.getRequestURI(),
                 response.getStatus(),
-                request.getAttribute("x-user-api")
+                request.getAttribute("x-user-ip")
         );
     }
 }
