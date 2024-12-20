@@ -38,4 +38,7 @@ public class Transfer {
     @CreationTimestamp
     private LocalDateTime transferDateTime;
 
+    @Column(name = "ip_address")
+    private String ipAddress;
+
 }

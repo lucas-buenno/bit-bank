@@ -3,15 +3,19 @@ package com.fbr.tech.BitBank.services;
 import com.fbr.tech.BitBank.controllers.dto.CreateWalletDto;
 import com.fbr.tech.BitBank.controllers.dto.DepositMoneyDto;
 import com.fbr.tech.BitBank.controllers.dto.GetWalletsDto;
+import com.fbr.tech.BitBank.controllers.dto.TransferOperationDto;
 import com.fbr.tech.BitBank.entities.Deposit;
+import com.fbr.tech.BitBank.entities.Transfer;
 import com.fbr.tech.BitBank.entities.Wallet;
 import com.fbr.tech.BitBank.exception.DataAlreadyExistsException;
 import com.fbr.tech.BitBank.exception.WalletBalanceException;
 import com.fbr.tech.BitBank.exception.WalletNotFoundException;
 import com.fbr.tech.BitBank.repositories.DepositRepository;
+import com.fbr.tech.BitBank.repositories.TransferRepository;
 import com.fbr.tech.BitBank.repositories.WalletRepository;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.DecimalMin;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -19,6 +23,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -29,6 +34,8 @@ public class WalletService {
     private WalletRepository walletRepository;
 
     private DepositRepository depositRepository;
+    
+    private TransferRepository transferRepository;
 
 
     public Wallet createWallet(CreateWalletDto dto) {
@@ -108,4 +115,6 @@ public class WalletService {
         wallet.setBalance(wallet.getBalance().add(dto.value()));
         walletRepository.save(wallet);
     }
+
+
 }
