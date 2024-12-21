@@ -64,6 +64,19 @@ public class WalletController {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping("/{walletId}/extrato")
+    public ResponseEntity<StatementDto> getStatements(
+            @PathVariable UUID walletId,
+            @RequestParam(name = "page", defaultValue = "0") Integer page,
+            @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
+            @RequestParam(name = "sortBy", defaultValue = "statement_date_time") String sortBy,
+            @RequestParam(name = "sortOrder", defaultValue = "desc") String sortOrder
+    ) {
+
+        var statement = walletService.getStatement(walletId, page, pageSize, sortBy, sortOrder);
+
+        return ResponseEntity.ok(statement);
+    }
 }
 
 
