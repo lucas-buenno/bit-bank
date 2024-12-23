@@ -29,8 +29,6 @@ public class WalletService {
     private WalletRepository walletRepository;
 
     private DepositRepository depositRepository;
-    
-    private TransferRepository transferRepository;
 
 
     public Wallet createWallet(CreateWalletDto dto) {
@@ -111,103 +109,104 @@ public class WalletService {
         walletRepository.save(wallet);
     }
 
+    private Wallet findWallet(UUID walletId) {
+        
+        return walletRepository.findById(walletId)
+                .orElseThrow(() -> new WalletNotFoundException("Não encontramos nenhuma carteira com este ID"));
+    }
 
     public StatementDto getStatement(UUID walletId, Integer page, Integer pageSize, String sortBy, String sortOrder) {
-        
+
         var wallet = findWallet(walletId);
-        
         var direction = Sort.Direction.DESC;
-        
+
         if (!sortOrder.equalsIgnoreCase("desc")) {
             direction = Sort.Direction.ASC;
         }
-        
-        var pageRequest = PageRequest.of(page, pageSize, direction, sortBy);
-        
-        var statement = walletRepository.getStatement(walletId.toString(), pageRequest)
-                .map(view -> mapToDto(walletId, view));
 
-        return new StatementDto(
-                new WalletStatementDto(
-                        wallet.getId(),
-                        wallet.getCpf(),
-                        wallet.getEmail(),
-                        wallet.getBalance(),
-                        wallet.getWalletCreationDate()
-                ),
-                statement.getContent(),
-                new PaginationResponseDto(
-                        page,
-                        pageSize,
-                        statement.getTotalElements(),
-                        statement.getTotalPages()
-                        )
-        );
+        PageRequest pageRequest = PageRequest.of(page, pageSize, direction, sortBy);
+
+       var statement = walletRepository.getStatement(walletId.toString(), pageRequest)
+                .map(statementView -> mapToDto(walletId, statementView));
+
+       return new StatementDto(
+               new WalletStatementDto(
+                       wallet.getId(),
+                       wallet.getCpf(),
+                       wallet.getEmail(),
+                       wallet.getHolderName(),
+                       wallet.getBalance(),
+                       wallet.getWalletCreationDate()
+                    ),
+                       statement.getContent(),
+                       new PaginationResponseDto(
+                               page,
+                               pageSize,
+                               statement.getTotalElements(),
+                               statement.getTotalPages()
+                       )
+               );
     }
 
-    private StatementItemDto mapToDto(UUID walletId, StatementView view) {
+    private StatementItemDto mapToDto(UUID walletId, StatementView statementView) {
 
-        if (view.getType().equalsIgnoreCase("deposit")) {
-            return mapToDeposit(view);
+        if (statementView.getType().equalsIgnoreCase("deposit")) {
+            return mapToDeposit(statementView);
         }
 
-        if (view.getType().equalsIgnoreCase("transfer")
-                && view.getWalletReceiverId().equalsIgnoreCase(walletId.toString())) {
+        if (statementView.getType().equalsIgnoreCase("transfer")
+                && walletId.toString().equalsIgnoreCase(statementView.getWalletSenderId())) {
 
-            return mapToTransferWhenReceiver(view);
+            return mapWhenSentTransfer(statementView);
         }
 
-        if (view.getType().equalsIgnoreCase("transfer")
-        && view.getWalletSenderId().equalsIgnoreCase(walletId.toString())) {
+        if (statementView.getType().equalsIgnoreCase("transfer")
+                && walletId.toString().equalsIgnoreCase(statementView.getWalletReceiverId())) {
 
-            return mapToTransferWhenSender(view);
+            return mapWhenReceivedTransfer(statementView);
         }
 
         throw new StatementOperationTypeException("O tipo de operação informado é inválido");
     }
 
-    private StatementItemDto mapToDeposit(StatementView view) {
-        return new StatementItemDto(
-                view.getStatementId(),
-                view.getType(),
-                view.getStatementDateTime(),
-                OperationCategory.CREDIT,
-                view.getStatementValue(),
-                view.getStatementIpAddress(),
-                view.getWalletReceiverId(),
-                view.getWalletSenderId()
-        );
-    }
+    private StatementItemDto mapWhenSentTransfer(StatementView statementView) {
 
-    private StatementItemDto mapToTransferWhenReceiver(StatementView view) {
         return new StatementItemDto(
-                view.getStatementId(),
-                view.getType(),
-                view.getStatementDateTime(),
-                OperationCategory.CREDIT,
-                view.getStatementValue(),
-                view.getStatementIpAddress(),
-                view.getWalletReceiverId(),
-                view.getWalletSenderId()
-        );
-    }
-
-    private StatementItemDto mapToTransferWhenSender(StatementView view) {
-        return new StatementItemDto(
-                view.getStatementId(),
-                view.getType(),
-                view.getStatementDateTime(),
+                statementView.getStatementId(),
+                statementView.getType(),
                 OperationCategory.DEBIT,
-                view.getStatementValue(),
-                view.getStatementIpAddress(),
-                view.getWalletReceiverId(),
-                view.getWalletSenderId()
+                statementView.getStatementDateTime(),
+                statementView.getStatementValue(),
+                statementView.getIpAddress(),
+                statementView.getWalletReceiverId(),
+                statementView.getWalletSenderId()
         );
     }
 
-    private Wallet findWallet(UUID walletId) {
-        
-        return walletRepository.findById(walletId)
-                .orElseThrow(() -> new WalletNotFoundException("Não encontramos nenhuma carteira com este ID"));
+    private StatementItemDto mapWhenReceivedTransfer(StatementView statementView) {
+
+        return new StatementItemDto(
+                statementView.getStatementId(),
+                statementView.getType(),
+                OperationCategory.CREDIT,
+                statementView.getStatementDateTime(),
+                statementView.getStatementValue(),
+                statementView.getIpAddress(),
+                statementView.getWalletReceiverId(),
+                statementView.getWalletSenderId()
+        );
+    }
+
+    private StatementItemDto mapToDeposit(StatementView statementView) {
+        return new StatementItemDto(
+                statementView.getStatementId(),
+                statementView.getType(),
+                OperationCategory.CREDIT,
+                statementView.getStatementDateTime(),
+                statementView.getStatementValue(),
+                statementView.getIpAddress(),
+                statementView.getWalletSenderId(),
+                statementView.getWalletReceiverId()
+        );
     }
 }

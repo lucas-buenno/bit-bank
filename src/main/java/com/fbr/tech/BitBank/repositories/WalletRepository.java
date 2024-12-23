@@ -21,23 +21,24 @@ public interface WalletRepository extends JpaRepository<Wallet, UUID> {
         "deposit" as type,
         deposit_date_time as statement_date_time,
         deposit_value as statement_value,
-        ip_address as statement_ip_address,
+        ip_address as ip_address,
         BIN_TO_UUID(wallet_receiver_id) as wallet_receiver_id,
         "" as wallet_sender_id
     FROM deposit_tb
-    WHERE wallet_receiver_id = UUID_TO_BIN(:teste123)
+    WHERE wallet_receiver_id = UUID_TO_BIN(:walletId)
     UNION ALL
     SELECT
         BIN_TO_UUID(transfer_id) as statement_id,
         "transfer" as type,
         transfer_date_time as statement_date_time,
         transfer_value as statement_value,
-        ip_address as statement_ip_address,
+        ip_address as ip_address,
         BIN_TO_UUID(wallet_receiver_id) as wallet_receiver_id,
         BIN_TO_UUID(wallet_sender_id) as wallet_sender_id
     FROM transfer_db
-    WHERE wallet_receiver_id = UUID_TO_BIN(:teste123) OR wallet_sender_id = UUID_TO_BIN(:walletId)
+    WHERE wallet_receiver_id = UUID_TO_BIN(:walletId) OR wallet_sender_id = UUID_TO_BIN(:walletId)
 """;
+
 
 
     String SQL_COUNT_STATEMENT = """
@@ -49,6 +50,6 @@ public interface WalletRepository extends JpaRepository<Wallet, UUID> {
     Optional<Wallet> findWalletByCpfOrEmail(String cpf, String email);
 
     @Query(value = SQL_STATEMENT, countQuery = SQL_COUNT_STATEMENT, nativeQuery = true)
-    Page<StatementView> getStatement(String teste123, PageRequest pageRequest);
+    Page<StatementView> getStatement(String walletId, PageRequest pageRequest);
 
 }

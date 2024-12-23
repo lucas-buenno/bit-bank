@@ -65,7 +65,7 @@ public class WalletController {
     }
 
     @GetMapping("/{walletId}/extrato")
-    public ResponseEntity<StatementDto> getStatements(
+    public ResponseEntity<StatementDto> getStatement(
             @PathVariable UUID walletId,
             @RequestParam(name = "page", defaultValue = "0") Integer page,
             @RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize,
@@ -77,6 +77,7 @@ public class WalletController {
 
         return ResponseEntity.ok(statement);
     }
+
 }
 
 
